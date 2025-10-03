@@ -12,6 +12,9 @@ this is an [expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 ## setup
 
+> **[!NOTE]**:  
+> you can use anything from `bun`, `yarn`, `npm`, `pnpm` for your node/javascript packages.
+
 1. create expo app:
    ```sh
    bun create expo-app i-hear-you
