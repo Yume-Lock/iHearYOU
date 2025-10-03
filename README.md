@@ -4,6 +4,27 @@
 
 this is an [expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+
+a solution that demonstrates both input (speech recognition) and output (visual + auditory) channels in HCI.
+
+## analysis:
+“hold up and analyze” —raekwon :)  
+the project can be interpreted and categorized  broadly into:
+- **input channel**: this utilizes user’s hearing (voice recognition - "blue" or "red")
+- **output channels**:
+auditory (text-to-speech feedback)
+visual (colored screens)
+
+## implementation:
+first of all I think allowing for continuosly listening for speech without using a button is absurd...  
+in this context the structure/working of the ihear-you application should be/is as follows:  
+initialize speech recognition on app start
+listen continuously for "blue" or "red" when the button for listening is pressed and stop button is pressed as well. 
+when detected:
+play tts response
+change screen color
+
+
 ![iHearYOU App Screenshot](./iHearYOU.jpeg)
 ## environment
 > **list of things I dislike**: [windows, windows setup, etc]  
@@ -21,13 +42,11 @@ this is an [expo](https://expo.dev) project created with [`create-expo-app`](htt
    cd i-hear-you
    ```
 
-
 2. install dependencies
 
    ```sh
    bun add expo-av expo-audio expo-haptics
    bun add -d @types/react # @types/react@~19.1.10
-
    ```
 
 3. start the app
@@ -41,7 +60,7 @@ in the output, you'll find options to open the app in a
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
 - [android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [expo go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- [expo go](https://expo.dev/go), a limited sandbox for trying out app development with expo
 
 you can start developing by editing the files inside the **app** directory. this project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
