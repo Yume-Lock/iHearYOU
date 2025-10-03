@@ -7,6 +7,10 @@ this is an [expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 a solution that demonstrates both input (speech recognition) and output (visual + auditory) channels in HCI.
 
+## environment
+> **list of things I dislike**: [windows, windows setup, etc]  
+> first off, please use a linux environment if you can. skill issue if you're on windows man - a joke :) it should be relatively easy, though, to work on a linux environment; this will save you lots of setup troubles.
+
 ## analysis:
 “hold up and analyze” —raekwon :)  
 the project can be interpreted and categorized  broadly into:
@@ -18,17 +22,12 @@ visual (colored screens)
 ## implementation:
 first of all I think allowing for continuosly listening for speech without using a button is absurd...  
 in this context the structure/working of the ihear-you application should be/is as follows:  
-initialize speech recognition on app start
-listen continuously for "blue" or "red" when the button for listening is pressed and stop button is pressed as well. 
-when detected:
+1. initialize speech recognition on button pressing - listen for "blue" or "red" when the button for listening is pressed and stop button is pressed as well. 
+2. when detected:
 play tts response
-change screen color
-
+change screen color  
 
 ![iHearYOU App Screenshot](./iHearYOU.jpeg)
-## environment
-> **list of things I dislike**: [windows, windows setup, etc]  
-> first off, please use a linux environment if you can. skill issue if you're on windows man - a joke :) it should be relatively easy, though, to work on a linux environment; this will save you lots of setup troubles.
 
 
 ## setup
