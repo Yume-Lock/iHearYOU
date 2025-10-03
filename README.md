@@ -1,13 +1,13 @@
-# iHear You
+# iHearYOU 
 
 > ICS 2402: User Interface Architectures
 
 this is an [expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-
+![iHearYOU App Screenshot](./iHearYOU.jpeg)
 ## environment
-> **list of things I hate**: [windows, windows setup, etc]  
-> first off, please use a linux environment if you can. skill issue if you're on windows man - a joke :). it should be relatively easy, though, to work on a linux environment; this will save you lots of setup troubles.
+> **list of things I dislike**: [windows, windows setup, etc]  
+> first off, please use a linux environment if you can. skill issue if you're on windows man - a joke :) it should be relatively easy, though, to work on a linux environment; this will save you lots of setup troubles.
 
 
 ## setup
@@ -22,7 +22,7 @@ this is an [expo](https://expo.dev) project created with [`create-expo-app`](htt
 2. install dependencies
 
    ```sh
-   bun add expo-speech-recognition expo-audio expo-haptics
+   bun add expo-av expo-audio expo-haptics
    bun add -d @types/react # @types/react@~19.1.10
 
    ```
@@ -59,6 +59,7 @@ i-hear-you/
 when you're ready, run:
 
 ```bash
+# dont do this
 npm run reset-project
 ```
 
