@@ -44,8 +44,10 @@ change screen color
 2. install dependencies
 
    ```sh
-   bun add expo-av expo-audio expo-haptics
-   bun add -d @types/react # @types/react@~19.1.10
+   bun add expo expo-speech expo-status-bar react-native-webview
+
+   # development dependencies (typescript support)
+   bun add -d typescript @types/react@~19.1.10 @types/react-native
    ```
 
 3. start the app
@@ -67,11 +69,26 @@ you can start developing by editing the files inside the **app** directory. this
 ## files:
 ```sh
 i-hear-you/
-├── App.js
-├── app.json
+├── App.tsx                          # main entry point
+├── app.json                         # expo config
 ├── package.json
-├── bun.lockb
-└── assets/
+├── tsconfig.json                    # typeScript conf
+├── bun.lock
+├── assets/
+└── src/
+    ├── components/                  # react components
+    │   └── IHearYou.tsx
+    ├── hooks/
+    │   └── useSpeechRecognition.ts
+    ├── services/
+    │   └── SpeechRecognitionService.ts
+    ├── types/
+    │   └── speech.ts               # speech-related types
+    ├── utils/
+    │   └── SpeechProcessor.ts      # command processing
+    ├── styles/
+    │   └── styles.ts
+    └── index.ts
 ```
 
 

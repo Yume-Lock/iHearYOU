@@ -6,11 +6,13 @@
       "dom",
       "esnext"
     ],
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noEmit": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "strict": true
+    "strict": true,
+    "esModuleInterop": true,
+    "allowJs": true
   },
   "include": [
     "**/*.ts",
