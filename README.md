@@ -27,7 +27,7 @@ in this context the structure/working of the ihear-you application should be/is 
 play tts response
 change screen color  
 
-![iHearYOU App Screenshot](./iHearYOU.jpeg)
+![iHearYOU](./hello-listening.jpeg)
 
 
 ## setup
