@@ -1,9 +1,9 @@
 import { registerRootComponent } from 'expo';
-import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
+  Alert,
   Platform,
   ScrollView,
   Text,
@@ -11,212 +11,366 @@ import {
   Vibration,
   View
 } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { styles } from './styles';
 
 export default function IHearYouApp() {
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-  const [status, setStatus] = useState('Tap the microphone to start listening');
+  const [status, setStatus] = useState('Ready! Tap microphone and say "Blue" or "Red"');
   const [currentColor, setCurrentColor] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [hasPermission, setHasPermission] = useState(null);
-  const [recording, setRecording] = useState(null);
+  const [recognizedText, setRecognizedText] = useState('');
+  const webViewRef = useRef(null);
+  const [hasReceivedResult, setHasReceivedResult] = useState(false);
 
-  // permissions for mic - on app start;
-  useEffect(() => {
-    requestPermissions();
-  }, []);
+  // Web Speech API HTML content
+  const speechRecognitionHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <script>
+            let recognition = null;
+            let isRecognitionRunning = false;
+            let recognitionTimeout = null;
 
-  const requestPermissions = async () => {
+            async function initSpeechRecognition() {
+                console.log('WebView: Initializing speech recognition...');
+                
+                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                    console.log('WebView: Speech recognition not supported');
+                    window.ReactNativeWebView.postMessage(JSON.stringify({
+                        type: 'error',
+                        message: 'Speech recognition not supported in this browser'
+                    }));
+                    return;
+                }
+                
+                try {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    
+                    recognition = new SpeechRecognition();
+                    recognition.lang = 'en-US';
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+                    recognition.maxAlternatives = 3;
+                    
+                    recognition.onstart = () => {
+                        isRecognitionRunning = true;
+                        console.log('WebView: Speech recognition started successfully');
+                        window.ReactNativeWebView.postMessage(JSON.stringify({
+                            type: 'speechStart'
+                        }));
+                    };
+                    
+                    recognition.onresult = (event) => {
+                        console.log('WebView: Got speech results:', event.results.length);
+                        // Only process the final result
+                        if (event.results.length > 0) {
+                            const lastResult = event.results[event.results.length - 1];
+                            if (lastResult.isFinal) {
+                                const transcript = lastResult[0].transcript.toLowerCase().trim();
+                                const confidence = lastResult[0].confidence || 0.5;
+                                console.log('WebView: Final result:', transcript, 'confidence:', confidence);
+                                
+                                // Small delay to ensure recognition has fully completed
+                                setTimeout(() => {
+                                    window.ReactNativeWebView.postMessage(JSON.stringify({
+                                        type: 'speechResult',
+                                        transcript: transcript,
+                                        confidence: confidence
+                                    }));
+                                }, 100);
+                            }
+                        }
+                    };
+                    
+                    recognition.onerror = (event) => {
+                        isRecognitionRunning = false;
+                        console.log('WebView: Speech recognition error:', event.error);
+                        
+                        if (recognitionTimeout) {
+                            clearTimeout(recognitionTimeout);
+                            recognitionTimeout = null;
+                        }
+                        
+                        window.ReactNativeWebView.postMessage(JSON.stringify({
+                            type: 'speechError',
+                            error: event.error
+                        }));
+                    };
+                    
+                    recognition.onend = () => {
+                        isRecognitionRunning = false;
+                        console.log('WebView: Speech recognition ended');
+                        
+                        if (recognitionTimeout) {
+                            clearTimeout(recognitionTimeout);
+                            recognitionTimeout = null;
+                        }
+                        
+                        window.ReactNativeWebView.postMessage(JSON.stringify({
+                            type: 'speechEnd'
+                        }));
+                    };
+                    
+                    console.log('WebView: Speech recognition initialized successfully');
+                    window.ReactNativeWebView.postMessage(JSON.stringify({
+                        type: 'ready'
+                    }));
+                    
+                } catch (error) {
+                    console.log('WebView: Error initializing speech recognition:', error);
+                    window.ReactNativeWebView.postMessage(JSON.stringify({
+                        type: 'error',
+                        message: 'Failed to initialize speech recognition: ' + error.message
+                    }));
+                }
+            }
+            
+            function startSpeechRecognition() {
+                console.log('WebView: startSpeechRecognition called, isRunning:', isRecognitionRunning);
+                
+                if (!recognition) {
+                    console.log('WebView: Recognition not initialized');
+                    window.ReactNativeWebView.postMessage(JSON.stringify({
+                        type: 'speechError',
+                        error: 'Speech recognition not initialized'
+                    }));
+                    return;
+                }
+                
+                // Stop any existing recognition first
+                if (isRecognitionRunning) {
+                    console.log('WebView: Stopping existing recognition first');
+                    recognition.stop();
+                    setTimeout(() => startSpeechRecognition(), 200);
+                    return;
+                }
+                
+                try {
+                    console.log('WebView: Starting fresh speech recognition');
+                    recognition.start();
+                    
+                    // Set timeout for auto-stop
+                    recognitionTimeout = setTimeout(() => {
+                        if (isRecognitionRunning && recognition) {
+                            console.log('WebView: Auto-stopping recognition after 5 seconds');
+                            recognition.stop();
+                        }
+                    }, 5000);
+                    
+                } catch (error) {
+                    console.log('WebView: Error starting recognition:', error.message);
+                    window.ReactNativeWebView.postMessage(JSON.stringify({
+                        type: 'speechError',
+                        error: error.message
+                    }));
+                }
+            }
+            
+            function stopSpeechRecognition() {
+                console.log('WebView: stopSpeechRecognition called');
+                if (recognition && isRecognitionRunning) {
+                    recognition.stop();
+                }
+                if (recognitionTimeout) {
+                    clearTimeout(recognitionTimeout);
+                    recognitionTimeout = null;
+                }
+            }
+            
+            // Initialize when page loads
+            window.addEventListener('load', initSpeechRecognition);
+            
+            // Also initialize immediately
+            initSpeechRecognition();
+        </script>
+    </body>
+    </html>
+  `;  // Handle messages from WebView
+  const handleWebViewMessage = (event) => {
     try {
-      const { status } = await Audio.requestPermissionsAsync();
-      setHasPermission(status === 'granted');
+      const data = JSON.parse(event.nativeEvent.data);
       
-      if (status === 'granted') {
-        setStatus('Ready! Tap microphone and say "Blue" or "Red"');
-      } else {
-        setStatus('Microphone permission required for voice commands.');
+      switch(data.type) {
+        case 'ready':
+          setStatus('Ready! Tap microphone and say "Blue" or "Red"');
+          break;
+          
+        case 'speechStart':
+          setStatus('🔴 Listening... Say "Blue" or "Red"');
+          setIsListening(true);
+          break;
+          
+        case 'speechResult':
+          const transcript = data.transcript || '';
+          const confidence = data.confidence || 0;
+          console.log('Received speech result:', transcript, 'confidence:', confidence);
+          setRecognizedText(transcript);
+          setHasReceivedResult(true); // Mark that we received a result
+          setStatus(`🎯 Heard: "${transcript}" (${Math.round(confidence * 100)}% confident)`);
+          processSpeech(transcript);
+          setIsListening(false);
+          break;
+          
+        case 'speechError':
+          const errorMsg = data.error || 'Unknown error';
+          setStatus(`❌ Voice error: ${errorMsg}. Try again.`);
+          setIsListening(false);
+          
+          // Auto-retry common errors after a short delay
+          if (errorMsg === 'aborted' || errorMsg === 'audio-capture') {
+            setTimeout(() => {
+              setStatus('Ready! Tap microphone and say "Blue" or "Red"');
+            }, 2000);
+          }
+          break;
+          
+        case 'speechEnd':
+          setIsListening(false);
+          // Only show 'no speech detected' if we truly didn't receive any results
+          setTimeout(() => {
+            if (!hasReceivedResult && !isListening) {
+              setStatus('❌ No speech detected. Try speaking louder and clearer.');
+              setTimeout(() => {
+                setStatus('Ready! Tap microphone and say "Blue" or "Red"');
+              }, 2000);
+            }
+          }, 500);
+          break;
+          
+        case 'error':
+          Alert.alert('Error', data.message);
+          break;
       }
     } catch (error) {
-      console.error('Error requesting permissions:', error);
-      setHasPermission(false);
-      setStatus('Error initializing audio.');
+      console.error('Error parsing WebView message:', error);
     }
   };
 
   const startListening = async () => {
-    if (!hasPermission) {
-      setStatus('ERROR: please grant microphone permission first.');
+    if (!webViewRef.current) {
+      setStatus('❌ Speech recognition not ready yet.');
       return;
     }
 
     try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-
-      setRecording(recording);
+      setStatus('🎤 Starting voice recognition...');
+      setRecognizedText(''); // Clear previous results
+      setHasReceivedResult(false); // Reset result flag
       setIsListening(true);
-      setStatus('🎤 Listening... Say "Blue" or "Red"');
-
+      
+      // Start WebView speech recognition with better error handling
+      webViewRef.current.injectJavaScript(`
+        console.log('React Native: Starting speech recognition');
+        if (typeof startSpeechRecognition === 'function') {
+          startSpeechRecognition();
+        } else {
+          console.log('React Native: startSpeechRecognition function not found');
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: 'speechError',
+            error: 'Speech recognition function not available'
+          }));
+        }
+        true;
+      `);
+      
     } catch (error) {
-      console.error('Failed to start recording:', error);
-      setStatus('Failed to start recording. Please try again.');
+      console.error('Failed to start voice recognition:', error);
+      setStatus('❌ Error starting voice recognition.');
+      setIsListening(false);
     }
   };
 
-  const stopListening = async () => {
-    if (!recording) return;
+  const stopListening = () => {
+    if (!webViewRef.current) return;
 
     try {
-      await recording.stopAndUnloadAsync();
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-      });
-
-      const uri = recording.getURI();
+      setStatus('⏹️ Processing...');
       setIsListening(false);
-      setRecording(null);
-
-      // simulate speech recognition
-      simulateSpeechRecognition();
-
+      
+      // Stop WebView speech recognition
+      webViewRef.current.injectJavaScript(`
+        console.log('React Native: Stopping speech recognition');
+        if (typeof stopSpeechRecognition === 'function') {
+          stopSpeechRecognition();
+        }
+        true;
+      `);
+      
     } catch (error) {
-      console.error('Failed to stop recording:', error);
-      setStatus('❌ Error stopping recording.');
+      console.error('Failed to stop voice recognition:', error);
+      setStatus('❌ Error stopping voice recognition.');
       setIsListening(false);
-      setRecording(null);
     }
   };
 
-  //  speech recognition
-  const simulateSpeechRecognition = () => {
-    setStatus(`🔍 Processing your command...`);
-  
-    setTimeout(() => {
-      const recognitionResults = simulateRealisticSpeechDetection();
-      processSpeech(recognitionResults);
-    }, 1500);
-  };
 
-  const simulateRealisticSpeechDetection = () => {
-    const scenarios = [
-      // high accuracy scenarios (80%)
-      { text: 'blue', weight: 35 },
-      { text: 'red', weight: 35 },
-      { text: 'blue screen', weight: 5 },
-      { text: 'red screen', weight: 5 },
-      
-      // moderate accuracy scenarios (15%)
-      { text: 'blu', weight: 3 },
-      { text: 'blew', weight: 2 },
-      { text: 'rad', weight: 3 },
-      { text: 'read', weight: 2 },
-      { text: 'bloo', weight: 2 },
-      { text: 'rid', weight: 3 },
-      
-      // low accuracy/unclear scenarios (5%)
-      { text: 'unclear audio', weight: 2 },
-      { text: 'background noise', weight: 1 },
-      { text: 'hello', weight: 1 },
-      { text: 'something else', weight: 1 }
-    ];
-  
-    // create selection
-    const totalWeight = scenarios.reduce((sum, scenario) => sum + scenario.weight, 0);
-    let random = Math.random() * totalWeight;
-    
-    for (const scenario of scenarios) {
-      random -= scenario.weight;
-      if (random <= 0) {
-        console.log('Speech recognition result:', scenario.text);
-        return scenario.text;
-      }
-    }
-    
-    // fallback
-    return Math.random() > 0.5 ? 'blue' : 'red';
-  };
 
   const processSpeech = (spokenText) => {
-    console.log('Processing speech:', spokenText);
+    console.log('Processing real speech recognition result:', spokenText);
     
     const cleanText = spokenText.trim().toLowerCase();
     
-    // color detection with multiple variations and phonetic similarities
-    const bluePatterns = [
-      'blue', 'blu', 'blew', 'bloo', 'bleu'
-    ];
+    // Exact word detection for "blue" and "red"
+    const containsBlue = cleanText.includes('blue');
+    const containsRed = cleanText.includes('red');
     
-    const redPatterns = [
-      'red', 'rad', 'rid', 'read'
-    ];
-    
-    // check for blue patterns
-    const hasBlue = bluePatterns.some(pattern => 
-      cleanText.includes(pattern) || 
-      cleanText.startsWith(pattern) || 
-      cleanText.endsWith(pattern)
-    );
-    
-    // check for red patterns
-    const hasRed = redPatterns.some(pattern => 
-      cleanText.includes(pattern) || 
-      cleanText.startsWith(pattern) || 
-      cleanText.endsWith(pattern)
-    );
-    
-    // prioritize exact matches and handle conflicts
-    if (hasBlue && hasRed) {
-      // if both detected, prioritize the one that appears first or is more prominent
-      const blueIndex = Math.min(...bluePatterns.map(p => cleanText.indexOf(p)).filter(i => i >= 0));
-      const redIndex = Math.min(...redPatterns.map(p => cleanText.indexOf(p)).filter(i => i >= 0));
+    // Handle the recognized speech
+    if (containsBlue && containsRed) {
+      // If both words are detected, prioritize the first one mentioned
+      const blueIndex = cleanText.indexOf('blue');
+      const redIndex = cleanText.indexOf('red');
       
-      if (blueIndex < redIndex || blueIndex === 0) {
-        handleColorCommand('blue', '#1E90FF', 'Here is the blue screen');
+      if (blueIndex < redIndex) {
+        handleColorCommand('blue', '#0066FF', 'Here is the blue screen');
       } else {
-        handleColorCommand('red', '#FF4444', 'Here is the red screen');
+        handleColorCommand('red', '#FF0000', 'Here is the red screen');
       }
-    } else if (hasBlue) {
-      handleColorCommand('blue', '#1E90FF', 'Here is the blue screen');
-    } else if (hasRed) {
-      handleColorCommand('red', '#FF4444', 'Here is the red screen');
+    } else if (containsBlue) {
+      handleColorCommand('blue', '#0066FF', 'Here is the blue screen');
+    } else if (containsRed) {
+      handleColorCommand('red', '#FF0000', 'Here is the red screen');
     } else {
       handleUnknownCommand(cleanText);
     }
   };
 
   const handleColorCommand = (color, colorCode, message) => {
-    // visual output: change background color
+    console.log(`Executing ${color} command`);
+    
+    // Visual output: change background color to the requested color
     setBackgroundColor(colorCode);
     setCurrentColor(color);
     
-    // haptic feedback on mobile
+    // Haptic feedback on mobile devices
     if (Platform.OS !== 'web') {
       Vibration.vibrate(100);
     }
   
-    setStatus(`You said: "${color}"\n${message}`);
+    setStatus(`✅ Recognized: "${color}"\n${message}`);
     
-    // audible out
+    // Auditory output: text-to-speech feedback
     speak(message);
   };
 
   const handleUnknownCommand = (spokenText) => {
-    const shortText = spokenText.length > 20 ? spokenText.substring(0, 20) + '...' : spokenText;
-    setStatus(`❌ Sorry, I only understand "Blue" and "Red".\nYou said: "${shortText}"`);
-    speak("Sorry, I only understand Blue and Red. Please try again.");
+    const shortText = spokenText.length > 30 ? spokenText.substring(0, 30) + '...' : spokenText;
+    setStatus(`❌ I only understand "Blue" and "Red".\nYou said: "${shortText}"`);
+    speak("Sorry, I only understand the words Blue and Red. Please try again.");
   };
 
   const speak = (text) => {
+    console.log('Speaking:', text);
     Speech.speak(text, {
       language: 'en-US',
       pitch: 1.0,
-      rate: 0.8,
+      rate: 0.75,
+      quality: 'enhanced'
     });
   };
 
@@ -228,34 +382,31 @@ export default function IHearYouApp() {
     }
   };
 
+  // Test functions for debugging (simulates voice commands)
   const testBlueCommand = () => {
-    handleColorCommand('blue', '#1E90FF', 'Here is the blue screen');
+    console.log('Testing blue command');
+    processSpeech('blue');
   };
 
   const testRedCommand = () => {
-    handleColorCommand('red', '#FF4444', 'Here is the red screen');
+    console.log('Testing red command');
+    processSpeech('red');
   };
 
   const resetApp = () => {
     setBackgroundColor('#ffffff');
     setCurrentColor('');
-    setStatus('🎤 Ready! Tap microphone and say "Blue" or "Red"');
-    setIsListening(false);
-    if (recording) {
-      recording.stopAndUnloadAsync();
-      setRecording(null);
+    setRecognizedText('');
+    setHasReceivedResult(false);
+    setStatus('Ready! Tap microphone and say "Blue" or "Red"');
+    
+    // Stop any ongoing voice recognition
+    if (isListening) {
+      stopListening();
     }
   };
 
-  // permission loading state
-  if (hasPermission === null) {
-    return (
-      <View style={[styles.container, styles.centerContent, { backgroundColor: '#ffffff' }]}>
-        <StatusBar style="auto" />
-        <Text style={styles.loadingText}>🎤 Requesting microphone permissions...</Text>
-      </View>
-    );
-  }
+
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
@@ -266,24 +417,42 @@ export default function IHearYouApp() {
         bounces={false}
       >
         
-        {/* top level */}
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>IHearYou</Text>
           <Text style={styles.subtitle}>hello, friend!</Text>
         </View>
 
-        {/* instructions + status */}
+        {/* Hidden WebView for Speech Recognition */}
+        <WebView
+          ref={webViewRef}
+          source={{ html: speechRecognitionHTML }}
+          style={{ height: 1, width: 1, opacity: 0 }}
+          onMessage={handleWebViewMessage}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          startInLoadingState={false}
+          mixedContentMode="compatibility"
+          allowsInlineMediaPlayback={true}
+          mediaPlaybackRequiresUserAction={false}
+          allowsFullscreenVideo={true}
+          allowsProtectedMedia={true}
+          originWhitelist={['*']}
+          onPermissionRequest={(request) => {
+            request.grant();
+          }}
+        />
+
+        {/* Combined Instructions & Status */}
         <View style={styles.combinedInstructionBox}>
           <Text style={styles.instructionText}>
-            {hasPermission 
-              ? 'Tap microphone → Record command → See & hear response!' 
-              : 'ERROR: microphone permission required for voice commands.'
-            }
+            Tap microphone → Say "Blue" or "Red" → Get response!
           </Text>
           <View style={styles.statusDivider} />
           <Text style={styles.statusText}>{status}</Text>
         </View>
 
+        {/* Microphone Button */}
         <TouchableOpacity
           style={[
             styles.micButton,
@@ -291,7 +460,6 @@ export default function IHearYouApp() {
           ]}
           onPress={toggleListening}
           activeOpacity={0.8}
-          disabled={!hasPermission}
         >
           <Text style={styles.micButtonText}>
             {isListening ? '🔴' : '🎤'}
@@ -306,6 +474,15 @@ export default function IHearYouApp() {
           <View style={styles.stateBox}>
             <Text style={styles.stateText}>
               🎨 Current: {currentColor.charAt(0).toUpperCase() + currentColor.slice(1)} Screen
+            </Text>
+          </View>
+        )}
+
+        {/* Recognition result display */}
+        {recognizedText && (
+          <View style={styles.stateBox}>
+            <Text style={styles.stateText}>
+              🎤 Last recognized: "{recognizedText}"
             </Text>
           </View>
         )}
