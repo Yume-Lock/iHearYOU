@@ -35,14 +35,14 @@ change screen color
 > you can use anything from `bun`, `yarn`, `npm`, `pnpm` for your node/javascript packages.
 
 ### a) setup from this repo
-```sh
-# clone repo
-git clone git@github.com:Yume-Lock/iHearYOU.git
-cd i-hear-you
-# add specific packages
-# specific versions if you want (see first time setup if necessary for this)
-bun install 
-```
+   ```sh
+   # clone repo
+   git clone git@github.com:Yume-Lock/iHearYOU.git
+   cd i-hear-you
+   # add specific packages
+   # or specific versions if you want (see first time setup if necessary for this)
+   bun install 
+   ```
 
 ### b) first time setup
 
@@ -61,10 +61,10 @@ bun install
    bun add -d typescript @types/react@~19.1.10 @types/react-native
    ```
 
-3. start the app
+### c) start the app
 
    ```bash
-   bun expo start
+   bun expo start # bun run start
    ```
 
 in the output, you'll find options to open the app in a
