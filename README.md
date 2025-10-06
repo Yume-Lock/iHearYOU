@@ -31,6 +31,9 @@ change screen color
 
 
 ## setup
+> **[!NOTE]**:  
+> you can use anything from `bun`, `yarn`, `npm`, `pnpm` for your node/javascript packages.
+
 ### a) setup from this repo
 ```sh
 # clone repo
@@ -42,8 +45,6 @@ bun install
 ```
 
 ### b) first time setup
-> **[!NOTE]**:  
-> you can use anything from `bun`, `yarn`, `npm`, `pnpm` for your node/javascript packages.
 
 1. create expo app:
    ```sh
