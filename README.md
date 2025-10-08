@@ -5,15 +5,13 @@
 this is an [expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 
-a solution that demonstrates both input (speech recognition) and output (visual + auditory) channels in HCI.
+a solution that demonstrates both input and output channels in HCI.
 
 ## analysis:
 “hold up and analyze” —raekwon :)  
 the project can be interpreted and categorized  broadly into:
 - **input channel**: this utilizes human speech (voice recognition - "blue" or "red")
-- **output channels**:
-auditory (text-to-speech feedback)
-visual (colored screens)
+- **output channels**: auditory (text-to-speech feedback) + visual (colored screens)
 
 ## implementation:
 first of all I think allowing for continuosly listening for speech without using a button is absurd...  
