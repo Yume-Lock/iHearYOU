@@ -56,6 +56,7 @@ change screen color
 
    ```sh
    bun add expo expo-speech expo-status-bar react-native-webview
+   bun add react-native-svg react-native-linear-gradient react-native-reanimated
 
    # development dependencies (typescript support)
    bun add -d typescript @types/react@~19.1.10 @types/react-native
@@ -89,6 +90,7 @@ i-hear-you/
 └── src/
     ├── components/                  # react components
     │   └── IHearYou.tsx
+    │   └── SiriAnimations.tsx     # wave and pulse animations
     ├── hooks/
     │   └── useSpeechRecognition.ts
     ├── services/
@@ -101,19 +103,6 @@ i-hear-you/
     │   └── styles.ts
     └── index.ts
 ```
-
-
-## get a fresh project
-
-when you're ready, run:
-
-```bash
-# dont do this
-npm run reset-project
-```
-
-this command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
 
 ---
 ## developers:

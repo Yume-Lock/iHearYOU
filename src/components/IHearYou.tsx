@@ -5,6 +5,9 @@ import { WebView } from 'react-native-webview';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { SpeechRecognitionService } from '../services/SpeechRecognitionService';
 import { styles } from '../styles/styles';
+import { GradientBackground } from './GradientBackground';
+import { Logo } from './Logo';
+import { PulseAnimation, SiriWaveAnimation } from './SiriAnimations';
 
 /**
  * IHearYou;
@@ -19,22 +22,60 @@ export default function IHearYou(): React.JSX.Element {
     webViewRef,
     handleWebViewMessage,
     toggleListening,
-    resetApp,
-    testBlueCommand,
-    testRedCommand
+    resetApp
   } = useSpeechRecognition();
 
   return (
-    <View style={[styles.container, { backgroundColor }]}>
-      <StatusBar style="auto" />
-      <ScrollView 
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-      >
-        <View style={styles.header}>
-          <Text style={styles.title}>IHearYou</Text>
-          <Text style={styles.subtitle}>hello, friend!</Text>
+    <GradientBackground 
+      colors={
+        backgroundColor === '#ffffff' 
+          ? ['#000000', '#1a1a2e', '#16213e']
+          : backgroundColor === '#2196F3' 
+          ? ['#1565C0', '#1976D2', '#0D47A1']
+          : ['#C62828', '#D32F2F', '#B71C1C']
+      }
+    >
+      <View style={[styles.container, { backgroundColor: 'transparent' }]}>
+        <StatusBar style="light" />
+        <ScrollView 
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+
+        <View style={styles.headerContainer}>
+          <View style={styles.header}>
+            <PulseAnimation isActive={isListening} scale={1.05}>
+              <View style={styles.logoContainer}>
+                <Logo width={140} height={140} />
+              </View>
+            </PulseAnimation>
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>IHearYou</Text>
+              <Text style={styles.subtitle}>hello, friend!</Text>
+            </View>
+          </View>
+
+          {/* instructions */}
+          <View style={styles.headerInstructions}>
+            <Text style={styles.headerInstructionsText}>Say "Blue" or "Red" to change colors.</Text>
+            <TouchableOpacity
+              style={styles.headerResetButton}
+              onPress={() => {
+                Alert.alert(
+                  'Reset App',
+                  'Clear current state?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Reset', onPress: resetApp, style: 'destructive' }
+                  ]
+                );
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.headerResetButtonText}>🔄</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* hidden webview for speech recognition */}
@@ -54,44 +95,24 @@ export default function IHearYou(): React.JSX.Element {
           originWhitelist={['*']}
         />
 
-        <View style={styles.statusCard}>
-          <Text style={styles.statusText}>{status}</Text>
-        </View>
-
-        <TouchableOpacity
-          style={[
-            styles.micButton,
-            isListening && styles.micButtonListening
-          ]}
-          onPress={toggleListening}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.micButtonText}>
-            {isListening ? '🔴' : '🎤'}
-          </Text>
-          <Text style={styles.micButtonSubtext}>
-            {isListening ? 'Listening...' : 'Tap to Speak'}
-          </Text>
-        </TouchableOpacity>
-
-        <View style={styles.shortInstructions}>
-          <Text style={styles.shortInstructionsText}>Say "Blue" or "Red" to change colors.</Text>
+        <View style={{ position: 'relative', alignItems: 'center' }}>
           <TouchableOpacity
-            style={styles.smallResetButton}
-            onPress={() => {
-              Alert.alert(
-                'Reset App',
-                'Clear current state?',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Reset', onPress: resetApp, style: 'destructive' }
-                ]
-              );
-            }}
+            style={[
+              styles.micButton,
+              isListening && styles.micButtonListening
+            ]}
+            onPress={toggleListening}
             activeOpacity={0.8}
           >
-            <Text style={styles.smallResetButtonText}>🔄</Text>
+            <Text style={styles.micButtonText}>
+              {isListening ? '🔴' : '🎤'}
+            </Text>
+            <Text style={styles.micButtonSubtext}>
+              {isListening ? 'Listening...' : 'Tap to Speak'}
+            </Text>
           </TouchableOpacity>
+
+          <SiriWaveAnimation isListening={isListening} size={160} />
         </View>
 
         {(currentColor || recognizedText) && (
@@ -103,37 +124,13 @@ export default function IHearYou(): React.JSX.Element {
             )}
             {recognizedText && (
               <Text style={styles.combinedStatusText}>
-                🎤 Heard: "{recognizedText}"
+                Heard: "{recognizedText}"
               </Text>
             )}
           </View>
         )}
-
-        <View style={styles.buttonContainer}>
-          <View style={styles.testButtonsContainer}>
-            <Text style={styles.testButtonsTitle}>Test Commands:</Text>
-            <View style={styles.testButtonsRow}>
-              <TouchableOpacity
-                style={[styles.testButton, styles.blueButton]}
-                onPress={testBlueCommand}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.testButtonText}>Test Blue</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[styles.testButton, styles.redButton]}
-                onPress={testRedCommand}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.testButtonText}>Test Red</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-
-        </View>
       </ScrollView>
-    </View>
+      </View>
+    </GradientBackground>
   );
 }
