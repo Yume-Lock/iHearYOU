@@ -7,10 +7,6 @@ this is an [expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 a solution that demonstrates both input (speech recognition) and output (visual + auditory) channels in HCI.
 
-## environment
-> **list of things I dislike**: [windows, windows setup, etc]  
-> first off, please use a linux environment if you can. skill issue if you're on windows man - a joke :) it should be relatively easy, though, to work on a linux environment; this will save you lots of setup troubles.
-
 ## analysis:
 “hold up and analyze” —raekwon :)  
 the project can be interpreted and categorized  broadly into:
@@ -28,6 +24,10 @@ in this context the structure/working of the ihearyou application should be/is a
 
 ![iHearYOU](./hello-listening.jpeg)
 
+
+## environment
+> **list of things I dislike**: [windows, windows setup, etc]  
+> first off, please use a linux environment if you can. skill issue if you're on windows man - a joke :) it should be relatively easy, though, to work on a linux environment; this will save you lots of setup troubles.
 
 ## setup
 > **[!NOTE]**:  
@@ -108,9 +108,9 @@ i-hear-you/
 
 | Name | Role |
 |------|------|
-| Jany Muong | Developer |
-| Joram Kireki | Developer |
-| Vincent Ochieng | Developer |
-| Akech Atem | Developer |
-| Gatmach Yuol Nyuon | Developer |
-| Josphat Waweru Thumi | Developer |
+| Jany Muong | developer |
+| Joram Kireki | developer |
+| Vincent Ochieng | developer |
+| Akech Atem | developer |
+| Gatmach Yuol Nyuon | developer |
+| Josphat Waweru Thumi | developer |
