@@ -14,7 +14,7 @@ a solution that demonstrates both input (speech recognition) and output (visual 
 ## analysis:
 “hold up and analyze” —raekwon :)  
 the project can be interpreted and categorized  broadly into:
-- **input channel**: this utilizes user’s hearing (voice recognition - "blue" or "red")
+- **input channel**: this utilizes human speech (voice recognition - "blue" or "red")
 - **output channels**:
 auditory (text-to-speech feedback)
 visual (colored screens)
