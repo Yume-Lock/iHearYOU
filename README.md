@@ -22,10 +22,10 @@ visual (colored screens)
 ## implementation:
 first of all I think allowing for continuosly listening for speech without using a button is absurd...  
 in this context the structure/working of the ihear-you application should be/is as follows:  
-1. initialize speech recognition on button pressing - listen for "blue" or "red" when the button for listening is pressed and stop button is pressed as well. 
+1. initialize speech recognition between button pressing and releasing/when person stops talking - listen for "blue" or "red"
 2. when detected:
-play tts response
-change screen color  
+play tts response + change screen color  
+
 
 ![iHearYOU](./hello-listening.jpeg)
 
@@ -56,7 +56,7 @@ change screen color
 
    ```sh
    bun add expo expo-speech expo-status-bar react-native-webview
-   bun add react-native-svg react-native-linear-gradient react-native-reanimated
+   bun add react-native-svg react-native-linear-gradient
 
    # development dependencies (typescript support)
    bun add -d typescript @types/react@~19.1.10 @types/react-native
@@ -73,9 +73,9 @@ in the output, you'll find options to open the app in a
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
 - [android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [expo go](https://expo.dev/go), a limited sandbox for trying out app development with expo
+- [expo go](https://expo.dev/go), a limited sandbox for trying out app development with expo (use expo go to can qr code of runnig app for testing on android)
 
-you can start developing by editing the files inside the **app** directory. this project uses [file-based routing](https://docs.expo.dev/router/introduction).
+you can start developing by editing the files inside the **[src](./src/)** directory.
 
 
 ## files:
@@ -105,10 +105,13 @@ i-hear-you/
 ```
 
 ---
-## developers:
-- Jany Muong
-- Joram Kireki
-- Vincent Ochieng
-- Akech Atem
-- Gatmach Yuol Nyuon
-- Josphat Waweru Thumi
+## authors:
+
+| Name | Role |
+|------|------|
+| Jany Muong | Developer |
+| Joram Kireki | Developer |
+| Vincent Ochieng | Developer |
+| Akech Atem | Developer |
+| Gatmach Yuol Nyuon | Developer |
+| Josphat Waweru Thumi | Developer |
