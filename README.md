@@ -21,10 +21,9 @@ visual (colored screens)
 
 ## implementation:
 first of all I think allowing for continuosly listening for speech without using a button is absurd...  
-in this context the structure/working of the ihear-you application should be/is as follows:  
-1. initialize speech recognition between button pressing and releasing/when person stops talking - listen for "blue" or "red"
-2. when detected:
-play tts response + change screen color  
+in this context the structure/working of the ihearyou application should be/is as follows:  
+1. initialize speech recognition; listen for "blue" or "red" between button pressing and releasing/when a person stops talking
+2. when detected: play tts response + change screen color  
 
 
 ![iHearYOU](./hello-listening.jpeg)
@@ -38,7 +37,7 @@ play tts response + change screen color
    ```sh
    # clone repo
    git clone git@github.com:Yume-Lock/iHearYOU.git
-   cd i-hear-you
+   cd iHearYOU # rename to i-hear-you if necessary
    # add specific packages
    # or specific versions if you want (see first time setup if necessary for this)
    bun install 
@@ -73,7 +72,7 @@ in the output, you'll find options to open the app in a
 - [development build](https://docs.expo.dev/develop/development-builds/introduction/)
 - [android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [expo go](https://expo.dev/go), a limited sandbox for trying out app development with expo (use expo go to can qr code of runnig app for testing on android)
+- [expo go](https://expo.dev/go), a limited sandbox for trying out app development with expo (install and use `expo go` to scan `QR` code of the runnig react native/expo app for testing on android)
 
 you can start developing by editing the files inside the **[src](./src/)** directory.
 
